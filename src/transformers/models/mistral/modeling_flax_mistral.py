@@ -127,9 +127,9 @@ MISTRAL_INPUTS_DOCSTRING = r"""
 """
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaRMSNorm with Llama->Mistral
-class FlaxMistralRMSNorm(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaRMSNorm with Mistral->Mistral
+class FlaxLlamaRMSNorm(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
@@ -146,9 +146,9 @@ class FlaxMistralRMSNorm(nn.Module):
         return self.weight * jnp.asarray(hidden_states, dtype=self.dtype)
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaRotaryEmbedding with Llama->Mistral
-class FlaxMistralRotaryEmbedding(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaRotaryEmbedding with Mistral->Mistral
+class FlaxLlamaRotaryEmbedding(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
@@ -168,9 +168,9 @@ class FlaxMistralRotaryEmbedding(nn.Module):
         return key, query
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaMLP with Llama->Mistral
-class FlaxMistralMLP(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaMLP with Mistral->Mistral
+class FlaxLlamaMLP(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
@@ -350,16 +350,16 @@ class FlaxMistralAttention(nn.Module):
         return outputs
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaDecoderLayer with Llama->Mistral
-class FlaxMistralDecoderLayer(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaDecoderLayer with Mistral->Mistral
+class FlaxLlamaDecoderLayer(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
-        self.input_layernorm = FlaxMistralRMSNorm(self.config, dtype=self.dtype)
-        self.self_attn = FlaxMistralAttention(self.config, dtype=self.dtype)
-        self.post_attention_layernorm = FlaxMistralRMSNorm(self.config, dtype=self.dtype)
-        self.mlp = FlaxMistralMLP(self.config, dtype=self.dtype)
+        self.input_layernorm = FlaxLlamaRMSNorm(self.config, dtype=self.dtype)
+        self.self_attn = FlaxLlamaAttention(self.config, dtype=self.dtype)
+        self.post_attention_layernorm = FlaxLlamaRMSNorm(self.config, dtype=self.dtype)
+        self.mlp = FlaxLlamaMLP(self.config, dtype=self.dtype)
 
     def __call__(
         self,
@@ -526,14 +526,14 @@ class FlaxMistralPreTrainedModel(FlaxPreTrainedModel):
         return outputs
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaLayerCollection with Llama->Mistral
-class FlaxMistralLayerCollection(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaLayerCollection with Mistral->Mistral
+class FlaxLlamaLayerCollection(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
         self.blocks = [
-            FlaxMistralDecoderLayer(self.config, dtype=self.dtype, name=str(i))
+            FlaxLlamaDecoderLayer(self.config, dtype=self.dtype, name=str(i))
             for i in range(self.config.num_hidden_layers)
         ]
 
@@ -567,15 +567,15 @@ class FlaxMistralLayerCollection(nn.Module):
             if output_attentions:
                 all_attentions += (layer_outputs[1],)
 
-        # this contains possible `None` values - `FlaxMistralModule` will filter them out
+        # this contains possible `None` values - `FlaxLlamaModule` will filter them out
         outputs = (hidden_states, all_hidden_states, all_attentions)
 
         return outputs
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaModule with Llama->Mistral
-class FlaxMistralModule(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaModule with Mistral->Mistral
+class FlaxLlamaModule(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
@@ -587,8 +587,8 @@ class FlaxMistralModule(nn.Module):
             embedding_init=embedding_init,
             dtype=self.dtype,
         )
-        self.layers = FlaxMistralLayerCollection(self.config, dtype=self.dtype)
-        self.norm = FlaxMistralRMSNorm(self.config, dtype=self.dtype)
+        self.layers = FlaxLlamaLayerCollection(self.config, dtype=self.dtype)
+        self.norm = FlaxLlamaRMSNorm(self.config, dtype=self.dtype)
 
     def __call__(
         self,
@@ -650,13 +650,13 @@ append_call_sample_docstring(
 )
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaForCausalLMModule with Llama->Mistral
-class FlaxMistralForCausalLMModule(nn.Module):
-    config: MistralConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaForCausalLMModule with Mistral->Mistral
+class FlaxLlamaForCausalLMModule(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
-        self.model = FlaxMistralModule(self.config, dtype=self.dtype)
+        self.model = FlaxLlamaModule(self.config, dtype=self.dtype)
         self.lm_head = nn.Dense(
             self.config.vocab_size,
             use_bias=False,

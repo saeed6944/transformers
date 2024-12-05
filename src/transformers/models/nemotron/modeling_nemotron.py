@@ -83,8 +83,8 @@ class NemotronLayerNorm1P(nn.LayerNorm):
 ALL_LAYERNORM_LAYERS.append(NemotronLayerNorm1P)
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRotaryEmbedding with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronRotaryEmbedding(nn.Module):
+# Copied from transformers.models.mistral.modeling_mistral.MistralRotaryEmbedding with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONRotaryEmbedding(nn.Module):
     # Ignore copy
     def __init__(
         self,
@@ -105,33 +105,15 @@ class NemotronRotaryEmbedding(nn.Module):
         self.register_buffer("inv_freq", inv_freq, persistent=False)
         self.original_inv_freq = self.inv_freq
 
-    def _dynamic_frequency_update(self, position_ids, device):
-        """
-        dynamic RoPE layers should recompute `inv_freq` in the following situations:
-        1 - growing beyond the cached sequence length (allow scaling)
-        2 - the current sequence length is in the original scale (avoid losing precision with small sequences)
-        """
-        seq_len = torch.max(position_ids) + 1
-        if seq_len > self.max_seq_len_cached:  # growth
-            inv_freq, self.attention_scaling = self.rope_init_fn(
-                self.config, device, seq_len=seq_len, **self.rope_kwargs
-            )
-            self.register_buffer("inv_freq", inv_freq, persistent=False)  # TODO joao: may break with compilation
-            self.max_seq_len_cached = seq_len
-
-        if seq_len < self.original_max_seq_len and self.max_seq_len_cached > self.original_max_seq_len:  # reset
-            self.register_buffer("inv_freq", self.original_inv_freq, persistent=False)
-            self.max_seq_len_cached = self.original_max_seq_len
-
     @torch.no_grad()
+    # copied from transformers.models.mistral.modeling_mistral.NEMOTRONRotaryEmbedding.forward
+    # TODO(joao): add me back asap :)
     def forward(self, x, position_ids):
-        if "dynamic" in self.rope_type:
-            self._dynamic_frequency_update(position_ids, device=x.device)
-
-        # Core RoPE block
+        # x: [bs, num_attention_heads, seq_len, head_size]
         inv_freq_expanded = self.inv_freq[None, :, None].float().expand(position_ids.shape[0], -1, 1)
         position_ids_expanded = position_ids[:, None, :].float()
-        # Force float32 (see https://github.com/huggingface/transformers/pull/29285)
+        # Force float32 since bfloat16 loses precision on long contexts
+        # See https://github.com/huggingface/transformers/pull/29285
         device_type = x.device.type
         device_type = device_type if isinstance(device_type, str) and device_type != "mps" else "cpu"
         with torch.autocast(device_type=device_type, enabled=False):
@@ -139,15 +121,10 @@ class NemotronRotaryEmbedding(nn.Module):
             emb = torch.cat((freqs, freqs), dim=-1)
             cos = emb.cos()
             sin = emb.sin()
-
-        # Advanced RoPE types (e.g. yarn) apply a post-processing scaling factor, equivalent to scaling attention
-        cos = cos * self.attention_scaling
-        sin = sin * self.attention_scaling
-
         return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -202,7 +179,7 @@ class NemotronMLP(nn.Module):
         return self.down_proj(self.act_fn(self.up_proj(x)))
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -301,14 +278,15 @@ class NemotronAttention(nn.Module):
         return attn_output, attn_weights, past_key_value
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2 with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronFlashAttention2(NemotronAttention):
+# Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2 with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONFlashAttention2(NEMOTRONAttention):
     """
-    Nemotron flash attention module. This module inherits from `NemotronAttention` as the weights of the module stays
+    NEMOTRON flash attention module. This module inherits from `NEMOTRONAttention` as the weights of the module stays
     untouched. The only required change would be on the forward pass where it needs to correctly call the public API of
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
+    # Copied from transformers.models.mistral.modeling_mistral.NEMOTRONFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -415,11 +393,11 @@ class NemotronFlashAttention2(NemotronAttention):
         return attn_output, attn_weights, past_key_value
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaSdpaAttention with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronSdpaAttention(NemotronAttention):
+# Copied from transformers.models.mistral.modeling_mistral.MistralSdpaAttention with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONSdpaAttention(NEMOTRONAttention):
     """
-    Nemotron attention module using torch.nn.functional.scaled_dot_product_attention. This module inherits from
-    `NemotronAttention` as the weights of the module stays untouched. The only changes are on the forward pass to adapt to
+    NEMOTRON attention module using torch.nn.functional.scaled_dot_product_attention. This module inherits from
+    `NEMOTRONAttention` as the weights of the module stays untouched. The only changes are on the forward pass to adapt to
     SDPA API.
     """
 
@@ -514,8 +492,8 @@ NEMOTRON_ATTENTION_CLASSES = {
 }
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaDecoderLayer with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronDecoderLayer(nn.Module):
+# Copied from transformers.models.mistral.modeling_mistral.MistralDecoderLayer with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONDecoderLayer(nn.Module):
     # Ignore copy
     def __init__(self, config: NemotronConfig, layer_idx: int):
         super().__init__()
@@ -536,7 +514,6 @@ class NemotronDecoderLayer(nn.Module):
         output_attentions: Optional[bool] = False,
         use_cache: Optional[bool] = False,
         cache_position: Optional[torch.LongTensor] = None,
-        position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,  # will become mandatory in v4.46
         **kwargs,
     ) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
         """
@@ -554,9 +531,6 @@ class NemotronDecoderLayer(nn.Module):
             past_key_value (`Tuple(torch.FloatTensor)`, *optional*): cached past key and value projection states
             cache_position (`torch.LongTensor` of shape `(sequence_length)`, *optional*):
                 Indices depicting the position of the input sequence tokens in the sequence
-            position_embeddings (`Tuple[torch.FloatTensor, torch.FloatTensor]`, *optional*):
-                Tuple containing the cosine and sine positional embeddings of shape `(batch_size, seq_len, head_dim)`,
-                with `head_dim` being the embedding dimension of each attention head.
             kwargs (`dict`, *optional*):
                 Arbitrary kwargs to be ignored, used for FSDP and other methods that injects code
                 into the model
@@ -574,7 +548,6 @@ class NemotronDecoderLayer(nn.Module):
             output_attentions=output_attentions,
             use_cache=use_cache,
             cache_position=cache_position,
-            position_embeddings=position_embeddings,
             **kwargs,
         )
         hidden_states = residual + hidden_states
@@ -865,16 +838,25 @@ class NemotronModel(NemotronPreTrainedModel):
             attentions=all_self_attns,
         )
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaModel._update_causal_mask with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel._update_causal_mask with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
     def _update_causal_mask(
         self,
         attention_mask: torch.Tensor,
         input_tensor: torch.Tensor,
         cache_position: torch.Tensor,
         past_key_values: Cache,
+        use_cache: bool,
         output_attentions: bool,
     ):
         if self.config._attn_implementation == "flash_attention_2":
+            if attention_mask is not None and use_cache:
+                is_padding_right = attention_mask[:, -1].sum().item() != input_tensor.size()[0]
+                if is_padding_right:
+                    raise ValueError(
+                        "You are attempting to perform batched generation with padding_side='right'"
+                        " this may lead to unexpected behaviour for Flash Attention version of NEMOTRON. Make sure to "
+                        " call `tokenizer.padding_side  = 'left'` before tokenizing the input. "
+                    )
             if attention_mask is not None and 0.0 in attention_mask:
                 return attention_mask
             return None
@@ -884,21 +866,30 @@ class NemotronModel(NemotronPreTrainedModel):
         # to infer the attention mask.
         past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
         using_static_cache = isinstance(past_key_values, StaticCache)
+        using_sliding_window_cache = isinstance(past_key_values, SlidingWindowCache)
 
         # When output attentions is True, sdpa implementation's forward method calls the eager implementation's forward
-        if self.config._attn_implementation == "sdpa" and not using_static_cache and not output_attentions:
+        if (
+            self.config._attn_implementation == "sdpa"
+            and not (using_static_cache or using_sliding_window_cache)
+            and not output_attentions
+        ):
             if AttentionMaskConverter._ignore_causal_mask_sdpa(
                 attention_mask,
                 inputs_embeds=input_tensor,
                 past_key_values_length=past_seen_tokens,
+                sliding_window=self.config.sliding_window,
                 is_training=self.training,
             ):
                 return None
 
         dtype, device = input_tensor.dtype, input_tensor.device
+        min_dtype = torch.finfo(dtype).min
         sequence_length = input_tensor.shape[1]
-        if using_static_cache:
+        # SlidingWindowCache or StaticCache
+        if using_sliding_window_cache or using_static_cache:
             target_length = past_key_values.get_max_cache_shape()
+        # DynamicCache or no cache
         else:
             target_length = (
                 attention_mask.shape[-1]
@@ -915,6 +906,8 @@ class NemotronModel(NemotronPreTrainedModel):
             device=device,
             cache_position=cache_position,
             batch_size=input_tensor.shape[0],
+            config=self.config,
+            past_key_values=past_key_values,
         )
 
         if (
@@ -926,13 +919,12 @@ class NemotronModel(NemotronPreTrainedModel):
             # Attend to all tokens in fully masked rows in the causal_mask, for example the relevant first rows when
             # using left padding. This is required by F.scaled_dot_product_attention memory-efficient attention path.
             # Details: https://github.com/pytorch/pytorch/issues/110213
-            min_dtype = torch.finfo(dtype).min
             causal_mask = AttentionMaskConverter._unmask_unattended(causal_mask, min_dtype)
 
         return causal_mask
 
     @staticmethod
-    # Copied from transformers.models.llama.modeling_llama.LlamaModel._prepare_4d_causal_attention_mask_with_cache_position
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel._prepare_4d_causal_attention_mask_with_cache_position
     def _prepare_4d_causal_attention_mask_with_cache_position(
         attention_mask: torch.Tensor,
         sequence_length: int,
@@ -941,7 +933,8 @@ class NemotronModel(NemotronPreTrainedModel):
         device: torch.device,
         cache_position: torch.Tensor,
         batch_size: int,
-        **kwargs,
+        config: MistralConfig,
+        past_key_values: Cache,
     ):
         """
         Creates a causal 4D mask of shape `(batch_size, 1, query_length, key_value_length)` from a 2D mask of shape
@@ -949,13 +942,11 @@ class NemotronModel(NemotronPreTrainedModel):
 
         Args:
             attention_mask (`torch.Tensor`):
-                A 2D attention mask of shape `(batch_size, key_value_length)` or a 4D attention mask of shape
-                `(batch_size, 1, query_length, key_value_length)`.
+                A 2D attention mask of shape `(batch_size, key_value_length)` or a 4D attention mask of shape `(batch_size, 1, query_length, key_value_length)`.
             sequence_length (`int`):
                 The sequence length being processed.
             target_length (`int`):
-                The target length: when generating with static cache, the mask should be as long as the static cache,
-                to account for the 0 padding, the part of the cache that is not filled yet.
+                The target length: when generating with static cache, the mask should be as long as the static cache, to account for the 0 padding, the part of the cache that is not filled yet.
             dtype (`torch.dtype`):
                 The dtype to use for the 4D attention mask.
             device (`torch.device`):
@@ -964,6 +955,10 @@ class NemotronModel(NemotronPreTrainedModel):
                 Indices depicting the position of the input sequence tokens in the sequence.
             batch_size (`torch.Tensor`):
                 Batch size.
+            config (`MistralConfig`):
+                The model's configuration class
+            past_key_values (`Cache`):
+                The cache class that is being used currently to generate
         """
         if attention_mask is not None and attention_mask.dim() == 4:
             # In this case we assume that the mask comes already in inverted form and requires no inversion or slicing.
@@ -973,23 +968,31 @@ class NemotronModel(NemotronPreTrainedModel):
             causal_mask = torch.full(
                 (sequence_length, target_length), fill_value=min_dtype, dtype=dtype, device=device
             )
-            if sequence_length != 1:
-                causal_mask = torch.triu(causal_mask, diagonal=1)
-            causal_mask *= torch.arange(target_length, device=device) > cache_position.reshape(-1, 1)
+            diagonal_attend_mask = torch.arange(target_length, device=device) > cache_position.reshape(-1, 1)
+            if config.sliding_window is not None:
+                # if we have sliding window, we should not attend to tokens beyond sliding window length, so we mask them out also
+                # the check is needed to verify is current checkpoint was trained with sliding window or not
+                if not isinstance(past_key_values, SlidingWindowCache) or sequence_length > target_length:
+                    sliding_attend_mask = torch.arange(target_length, device=device) <= (
+                        cache_position.reshape(-1, 1) - config.sliding_window
+                    )
+                    diagonal_attend_mask.bitwise_or_(sliding_attend_mask)
+            causal_mask *= diagonal_attend_mask
             causal_mask = causal_mask[None, None, :, :].expand(batch_size, 1, -1, -1)
             if attention_mask is not None:
                 causal_mask = causal_mask.clone()  # copy to contiguous memory for in-place edit
+                if attention_mask.shape[-1] > target_length:
+                    attention_mask = attention_mask[:, :target_length]
                 mask_length = attention_mask.shape[-1]
                 padding_mask = causal_mask[:, :, :, :mask_length] + attention_mask[:, None, None, :]
                 padding_mask = padding_mask == 0
                 causal_mask[:, :, :, :mask_length] = causal_mask[:, :, :, :mask_length].masked_fill(
                     padding_mask, min_dtype
                 )
-
         return causal_mask
 
 
-# TODO: re-enable check: Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
+# TODO: re-enable check: Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
 class NemotronForCausalLM(NemotronPreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 
@@ -1125,12 +1128,12 @@ class NemotronForCausalLM(NemotronPreTrainedModel, GenerationMixin):
     """,
     NEMOTRON_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForSequenceClassification with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronForSequenceClassification(NemotronPreTrainedModel):
+# Copied from transformers.models.mistral.modeling_mistral.MistralForSequenceClassification with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONForSequenceClassification(NEMOTRONPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.model = NemotronModel(config)
+        self.model = NEMOTRONModel(config)
         self.score = nn.Linear(config.hidden_size, self.num_labels, bias=False)
 
         # Initialize weights and apply final processing
@@ -1142,7 +1145,7 @@ class NemotronForSequenceClassification(NemotronPreTrainedModel):
     def set_input_embeddings(self, value):
         self.model.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(NEMOTRON_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MISTRAL_INPUTS_DOCSTRING)
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
@@ -1222,26 +1225,26 @@ SQuAD (a linear layer on top of the hidden-states output to compute `span start 
     """,
     NEMOTRON_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForQuestionAnswering with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronForQuestionAnswering(NemotronPreTrainedModel):
-    base_model_prefix = "transformer"
+# Copied from transformers.models.mistral.modeling_mistral.MistralForQuestionAnswering with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONForQuestionAnswering(NEMOTRONPreTrainedModel):
+    base_model_prefix = "model"
 
-    # Copied from transformers.models.bloom.modeling_bloom.BloomForQuestionAnswering.__init__ with Bloom->Nemotron
+    # Copied from models.models.bloom.modeling_bloom.BloomForQuestionAnswering.__init__ with Bloom->NEMOTRON
     def __init__(self, config):
         super().__init__(config)
-        self.transformer = NemotronModel(config)
+        self.model = NEMOTRONModel(config)
         self.qa_outputs = nn.Linear(config.hidden_size, 2)
 
         # Initialize weights and apply final processing
         self.post_init()
 
     def get_input_embeddings(self):
-        return self.transformer.embed_tokens
+        return self.model.embed_tokens
 
     def set_input_embeddings(self, value):
-        self.transformer.embed_tokens = value
+        self.model.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(NEMOTRON_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MISTRAL_INPUTS_DOCSTRING)
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
@@ -1268,7 +1271,7 @@ class NemotronForQuestionAnswering(NemotronPreTrainedModel):
         """
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        outputs = self.transformer(
+        outputs = self.model(
             input_ids,
             attention_mask=attention_mask,
             position_ids=position_ids,
@@ -1310,12 +1313,12 @@ class NemotronForQuestionAnswering(NemotronPreTrainedModel):
     """,
     NEMOTRON_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForTokenClassification with LLAMA->NEMOTRON,Llama->Nemotron,llama->nemotron
-class NemotronForTokenClassification(NemotronPreTrainedModel):
+# Copied from transformers.models.mistral.modeling_mistral.MistralForTokenClassification with Mistral->NEMOTRON,Mistral->Nemotron,Mistral->nemotron
+class NEMOTRONForTokenClassification(NEMOTRONPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.model = NemotronModel(config)
+        self.model = NEMOTRONModel(config)
         if getattr(config, "classifier_dropout", None) is not None:
             classifier_dropout = config.classifier_dropout
         elif getattr(config, "hidden_dropout", None) is not None:
@@ -1334,7 +1337,7 @@ class NemotronForTokenClassification(NemotronPreTrainedModel):
     def set_input_embeddings(self, value):
         self.model.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(NEMOTRON_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MISTRAL_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=TokenClassifierOutput,

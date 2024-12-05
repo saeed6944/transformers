@@ -74,7 +74,7 @@ class OlmoLayerNorm(nn.Module):
 ALL_LAYERNORM_LAYERS.append(OlmoLayerNorm)
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaRotaryEmbedding with Llama->Olmo
+# copied from transformers.models.mistral.modeling_mistral.MistralRotaryEmbedding with Mistral->Olmo
 # TODO(joao): add me back asap :)
 class OlmoRotaryEmbedding(nn.Module):
     def __init__(self, dim, max_position_embeddings=2048, base=10000, device=None, scaling_factor=1.0):
@@ -105,7 +105,7 @@ class OlmoRotaryEmbedding(nn.Module):
         return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaLinearScalingRotaryEmbedding with Llama->Olmo
+# copied from transformers.models.mistral.modeling_mistral.MistralLinearScalingRotaryEmbedding with Mistral->Olmo
 # TODO(joao): add me back asap :)
 class OlmoLinearScalingRotaryEmbedding(OlmoRotaryEmbedding):
     """OlmoRotaryEmbedding extended with linear scaling. Credits to the Reddit user /u/kaiokendev"""
@@ -117,7 +117,7 @@ class OlmoLinearScalingRotaryEmbedding(OlmoRotaryEmbedding):
         return cos, sin
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaDynamicNTKScalingRotaryEmbedding with Llama->Olmo
+# copied from transformers.models.mistral.modeling_mistral.MistralDynamicNTKScalingRotaryEmbedding with Mistral->Olmo
 # TODO(joao): add me back asap :)
 class OlmoDynamicNTKScalingRotaryEmbedding(OlmoRotaryEmbedding):
     """OlmoRotaryEmbedding extended with Dynamic NTK scaling. Credits to the Reddit users /u/bloc97 and /u/emozilla"""
@@ -138,7 +138,7 @@ class OlmoDynamicNTKScalingRotaryEmbedding(OlmoRotaryEmbedding):
         return cos, sin
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -146,7 +146,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
+# Copied from transformers.models.mistral.modeling_mistral.apply_rotary_pos_emb
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
 
@@ -189,7 +189,7 @@ class OlmoMLP(nn.Module):
         return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -205,7 +205,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
 class OlmoAttention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
-    # copied from transformers.models.llama.modeling_llama.LlamaAttention.__init__ with Llama->Olmo
+    # copied from transformers.models.mistral.modeling_mistral.MistralAttention.__init__ with Mistral->Olmo
     # TODO(joao): add me back asap :)
     def __init__(self, config: OlmoConfig, layer_idx: Optional[int] = None):
         super().__init__()
@@ -340,7 +340,7 @@ class OlmoFlashAttention2(OlmoAttention):
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
+    # Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -554,7 +554,7 @@ class OlmoDecoderLayer(nn.Module):
         self.input_layernorm = OlmoLayerNorm(config.hidden_size)
         self.post_attention_layernorm = OlmoLayerNorm(config.hidden_size)
 
-    # copied from transformers.models.llama.modeling_llama.LlamaDecoderLayer.forward
+    # copied from transformers.models.mistral.modeling_mistral.MistralDecoderLayer.forward
     # TODO(joao): add me back asap :)
     def forward(
         self,
@@ -641,17 +641,16 @@ OLMO_START_DOCSTRING = r"""
     "The bare Olmo Model outputting raw hidden-states without any specific head on top.",
     OLMO_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaPreTrainedModel with Llama->Olmo
+# Copied from transformers.models.mistral.modeling_mistral.MistralPreTrainedModel with Mistral->Olmo
 class OlmoPreTrainedModel(PreTrainedModel):
     config_class = OlmoConfig
     base_model_prefix = "model"
     supports_gradient_checkpointing = True
     _no_split_modules = ["OlmoDecoderLayer"]
-    _skip_keys_device_placement = ["past_key_values"]
+    _skip_keys_device_placement = "past_key_values"
     _supports_flash_attn_2 = True
     _supports_sdpa = True
     _supports_cache_class = True
-    _supports_quantized_cache = True
     _supports_static_cache = True
 
     def _init_weights(self, module):
@@ -775,7 +774,7 @@ class OlmoModel(OlmoPreTrainedModel):
         self.embed_tokens = value
 
     @add_start_docstrings_to_model_forward(OLMO_INPUTS_DOCSTRING)
-    # copied from transformers.models.llama.modeling_llama.LlamaModel.forward
+    # copied from transformers.models.mistral.modeling_mistral.MistralModel.forward
     # TODO(joao): add me back asap :)
     def forward(
         self,
@@ -896,16 +895,25 @@ class OlmoModel(OlmoPreTrainedModel):
             attentions=all_self_attns,
         )
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaModel._update_causal_mask
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel._update_causal_mask
     def _update_causal_mask(
         self,
         attention_mask: torch.Tensor,
         input_tensor: torch.Tensor,
         cache_position: torch.Tensor,
         past_key_values: Cache,
+        use_cache: bool,
         output_attentions: bool,
     ):
         if self.config._attn_implementation == "flash_attention_2":
+            if attention_mask is not None and use_cache:
+                is_padding_right = attention_mask[:, -1].sum().item() != input_tensor.size()[0]
+                if is_padding_right:
+                    raise ValueError(
+                        "You are attempting to perform batched generation with padding_side='right'"
+                        " this may lead to unexpected behaviour for Flash Attention version of Mistral. Make sure to "
+                        " call `tokenizer.padding_side  = 'left'` before tokenizing the input. "
+                    )
             if attention_mask is not None and 0.0 in attention_mask:
                 return attention_mask
             return None
@@ -915,21 +923,30 @@ class OlmoModel(OlmoPreTrainedModel):
         # to infer the attention mask.
         past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
         using_static_cache = isinstance(past_key_values, StaticCache)
+        using_sliding_window_cache = isinstance(past_key_values, SlidingWindowCache)
 
         # When output attentions is True, sdpa implementation's forward method calls the eager implementation's forward
-        if self.config._attn_implementation == "sdpa" and not using_static_cache and not output_attentions:
+        if (
+            self.config._attn_implementation == "sdpa"
+            and not (using_static_cache or using_sliding_window_cache)
+            and not output_attentions
+        ):
             if AttentionMaskConverter._ignore_causal_mask_sdpa(
                 attention_mask,
                 inputs_embeds=input_tensor,
                 past_key_values_length=past_seen_tokens,
+                sliding_window=self.config.sliding_window,
                 is_training=self.training,
             ):
                 return None
 
         dtype, device = input_tensor.dtype, input_tensor.device
+        min_dtype = torch.finfo(dtype).min
         sequence_length = input_tensor.shape[1]
-        if using_static_cache:
+        # SlidingWindowCache or StaticCache
+        if using_sliding_window_cache or using_static_cache:
             target_length = past_key_values.get_max_cache_shape()
+        # DynamicCache or no cache
         else:
             target_length = (
                 attention_mask.shape[-1]
@@ -946,6 +963,8 @@ class OlmoModel(OlmoPreTrainedModel):
             device=device,
             cache_position=cache_position,
             batch_size=input_tensor.shape[0],
+            config=self.config,
+            past_key_values=past_key_values,
         )
 
         if (
@@ -957,13 +976,12 @@ class OlmoModel(OlmoPreTrainedModel):
             # Attend to all tokens in fully masked rows in the causal_mask, for example the relevant first rows when
             # using left padding. This is required by F.scaled_dot_product_attention memory-efficient attention path.
             # Details: https://github.com/pytorch/pytorch/issues/110213
-            min_dtype = torch.finfo(dtype).min
             causal_mask = AttentionMaskConverter._unmask_unattended(causal_mask, min_dtype)
 
         return causal_mask
 
     @staticmethod
-    # Copied from transformers.models.llama.modeling_llama.LlamaModel._prepare_4d_causal_attention_mask_with_cache_position
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel._prepare_4d_causal_attention_mask_with_cache_position
     def _prepare_4d_causal_attention_mask_with_cache_position(
         attention_mask: torch.Tensor,
         sequence_length: int,
@@ -972,7 +990,8 @@ class OlmoModel(OlmoPreTrainedModel):
         device: torch.device,
         cache_position: torch.Tensor,
         batch_size: int,
-        **kwargs,
+        config: MistralConfig,
+        past_key_values: Cache,
     ):
         """
         Creates a causal 4D mask of shape `(batch_size, 1, query_length, key_value_length)` from a 2D mask of shape
@@ -980,13 +999,11 @@ class OlmoModel(OlmoPreTrainedModel):
 
         Args:
             attention_mask (`torch.Tensor`):
-                A 2D attention mask of shape `(batch_size, key_value_length)` or a 4D attention mask of shape
-                `(batch_size, 1, query_length, key_value_length)`.
+                A 2D attention mask of shape `(batch_size, key_value_length)` or a 4D attention mask of shape `(batch_size, 1, query_length, key_value_length)`.
             sequence_length (`int`):
                 The sequence length being processed.
             target_length (`int`):
-                The target length: when generating with static cache, the mask should be as long as the static cache,
-                to account for the 0 padding, the part of the cache that is not filled yet.
+                The target length: when generating with static cache, the mask should be as long as the static cache, to account for the 0 padding, the part of the cache that is not filled yet.
             dtype (`torch.dtype`):
                 The dtype to use for the 4D attention mask.
             device (`torch.device`):
@@ -995,6 +1012,10 @@ class OlmoModel(OlmoPreTrainedModel):
                 Indices depicting the position of the input sequence tokens in the sequence.
             batch_size (`torch.Tensor`):
                 Batch size.
+            config (`MistralConfig`):
+                The model's configuration class
+            past_key_values (`Cache`):
+                The cache class that is being used currently to generate
         """
         if attention_mask is not None and attention_mask.dim() == 4:
             # In this case we assume that the mask comes already in inverted form and requires no inversion or slicing.
@@ -1004,23 +1025,31 @@ class OlmoModel(OlmoPreTrainedModel):
             causal_mask = torch.full(
                 (sequence_length, target_length), fill_value=min_dtype, dtype=dtype, device=device
             )
-            if sequence_length != 1:
-                causal_mask = torch.triu(causal_mask, diagonal=1)
-            causal_mask *= torch.arange(target_length, device=device) > cache_position.reshape(-1, 1)
+            diagonal_attend_mask = torch.arange(target_length, device=device) > cache_position.reshape(-1, 1)
+            if config.sliding_window is not None:
+                # if we have sliding window, we should not attend to tokens beyond sliding window length, so we mask them out also
+                # the check is needed to verify is current checkpoint was trained with sliding window or not
+                if not isinstance(past_key_values, SlidingWindowCache) or sequence_length > target_length:
+                    sliding_attend_mask = torch.arange(target_length, device=device) <= (
+                        cache_position.reshape(-1, 1) - config.sliding_window
+                    )
+                    diagonal_attend_mask.bitwise_or_(sliding_attend_mask)
+            causal_mask *= diagonal_attend_mask
             causal_mask = causal_mask[None, None, :, :].expand(batch_size, 1, -1, -1)
             if attention_mask is not None:
                 causal_mask = causal_mask.clone()  # copy to contiguous memory for in-place edit
+                if attention_mask.shape[-1] > target_length:
+                    attention_mask = attention_mask[:, :target_length]
                 mask_length = attention_mask.shape[-1]
                 padding_mask = causal_mask[:, :, :, :mask_length] + attention_mask[:, None, None, :]
                 padding_mask = padding_mask == 0
                 causal_mask[:, :, :, :mask_length] = causal_mask[:, :, :, :mask_length].masked_fill(
                     padding_mask, min_dtype
                 )
-
         return causal_mask
 
 
-# TODO: re-enable check: Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM with LLAMA->OLMO,Llama->Olmo
+# TODO: re-enable check: Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM with Mistral->OLMO,Mistral->Olmo
 class OlmoForCausalLM(OlmoPreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 

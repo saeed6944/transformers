@@ -53,7 +53,7 @@ _CHECKPOINT_FOR_DOC = "microsoft/Phi-3-mini-4k-instruct"
 _CONFIG_FOR_DOC = "Phi3Config"
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Phi3
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Phi3
 class Phi3RMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """
@@ -231,7 +231,7 @@ class Phi3LongRoPEScaledRotaryEmbedding(Phi3RotaryEmbedding):
         return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -239,7 +239,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
+# Copied from transformers.models.mistral.modeling_mistral.apply_rotary_pos_emb
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
 
@@ -286,7 +286,7 @@ class Phi3MLP(nn.Module):
         return self.down_proj(up_states)
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv with llama->phi
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv with Mistral->phi
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -431,7 +431,7 @@ class Phi3FlashAttention2(Phi3Attention):
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
+    # Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -550,7 +550,7 @@ class Phi3FlashAttention2(Phi3Attention):
         return attn_output, attn_weights, past_key_value
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaSdpaAttention with Llama->Phi3
+# copied from transformers.models.mistral.modeling_mistral.MistralSdpaAttention with Mistral->Phi3
 # TODO @Arthur no longer copied from LLama after static cache
 class Phi3SdpaAttention(Phi3Attention):
     """
@@ -1155,7 +1155,7 @@ class Phi3Model(Phi3PreTrainedModel):
 class Phi3ForCausalLM(Phi3PreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.__init__ with Llama->Phi3
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.__init__ with Mistral->Phi3
     def __init__(self, config):
         super().__init__(config)
         self.model = Phi3Model(config)
@@ -1165,27 +1165,27 @@ class Phi3ForCausalLM(Phi3PreTrainedModel, GenerationMixin):
         # Initialize weights and apply final processing
         self.post_init()
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.get_input_embeddings
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.get_input_embeddings
     def get_input_embeddings(self):
         return self.model.embed_tokens
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.set_input_embeddings
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.set_input_embeddings
     def set_input_embeddings(self, value):
         self.model.embed_tokens = value
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.get_output_embeddings
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.get_output_embeddings
     def get_output_embeddings(self):
         return self.lm_head
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.set_output_embeddings
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.set_output_embeddings
     def set_output_embeddings(self, new_embeddings):
         self.lm_head = new_embeddings
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.set_decoder
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.set_decoder
     def set_decoder(self, decoder):
         self.model = decoder
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM.get_decoder
+    # Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM.get_decoder
     def get_decoder(self):
         return self.model
 
@@ -1342,7 +1342,7 @@ class Phi3ForCausalLM(Phi3PreTrainedModel, GenerationMixin):
     """,
     PHI3_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForSequenceClassification with Llama->Phi3, LLAMA->PHI3, self.transformer->self.model, transformer_outputs->model_outputs
+# Copied from transformers.models.mistral.modeling_mistral.MistralForSequenceClassification with Mistral->Phi3, Mistral->PHI3, self.transformer->self.model, transformer_outputs->model_outputs
 class Phi3ForSequenceClassification(Phi3PreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
@@ -1359,7 +1359,7 @@ class Phi3ForSequenceClassification(Phi3PreTrainedModel):
     def set_input_embeddings(self, value):
         self.model.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(PHI3_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MISTRAL_INPUTS_DOCSTRING)
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,

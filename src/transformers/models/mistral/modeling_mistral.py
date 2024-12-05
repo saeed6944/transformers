@@ -60,7 +60,7 @@ _CHECKPOINT_FOR_DOC = "mistralai/Mistral-7B-v0.1"
 _CONFIG_FOR_DOC = "MistralConfig"
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Mistral
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Mistral
 class MistralRMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """
@@ -92,7 +92,7 @@ class MistralRotaryEmbedding(nn.Module):
         self.register_buffer("inv_freq", inv_freq, persistent=False)
 
     @torch.no_grad()
-    # copied from transformers.models.llama.modeling_llama.LlamaRotaryEmbedding.forward
+    # copied from transformers.models.mistral.modeling_mistral.MistralRotaryEmbedding.forward
     # TODO(joao): add me back asap :)
     def forward(self, x, position_ids):
         # x: [bs, num_attention_heads, seq_len, head_size]
@@ -110,7 +110,7 @@ class MistralRotaryEmbedding(nn.Module):
         return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -118,7 +118,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
+# Copied from transformers.models.mistral.modeling_mistral.apply_rotary_pos_emb
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
 
@@ -160,7 +160,7 @@ class MistralMLP(nn.Module):
         return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -277,7 +277,7 @@ class MistralFlashAttention2(MistralAttention):
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
+    # Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -380,7 +380,7 @@ class MistralFlashAttention2(MistralAttention):
         return attn_output, attn_weights, past_key_value
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaSdpaAttention with Llama->Mistral
+# copied from transformers.models.mistral.modeling_mistral.MistralSdpaAttention with Mistral->Mistral
 # TODO(joao): add me back asap :)
 class MistralSdpaAttention(MistralAttention):
     """
@@ -477,7 +477,7 @@ MISTRAL_ATTENTION_CLASSES = {
 }
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaDecoderLayer with Llama->Mistral, LLAMA->MISTRAL
+# copied from transformers.models.mistral.modeling_mistral.MistralDecoderLayer with Mistral->Mistral, Mistral->MISTRAL
 # TODO(joao): add me back asap :)
 class MistralDecoderLayer(nn.Module):
     def __init__(self, config: MistralConfig, layer_idx: int):
@@ -1127,12 +1127,12 @@ class MistralForCausalLM(MistralPreTrainedModel, GenerationMixin):
     """,
     MISTRAL_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForSequenceClassification with Llama->Mistral, LLAMA->MISTRAL
-class MistralForSequenceClassification(MistralPreTrainedModel):
+# Copied from transformers.models.mistral.modeling_mistral.MistralForSequenceClassification with Mistral->Mistral, Mistral->MISTRAL
+class MISTRALForSequenceClassification(MISTRALPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.model = MistralModel(config)
+        self.model = MISTRALModel(config)
         self.score = nn.Linear(config.hidden_size, self.num_labels, bias=False)
 
         # Initialize weights and apply final processing
@@ -1224,12 +1224,12 @@ class MistralForSequenceClassification(MistralPreTrainedModel):
     """,
     MISTRAL_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForTokenClassification with Llama->Mistral, LLAMA->MISTRAL
-class MistralForTokenClassification(MistralPreTrainedModel):
+# Copied from transformers.models.mistral.modeling_mistral.MistralForTokenClassification with Mistral->Mistral, Mistral->MISTRAL
+class MISTRALForTokenClassification(MISTRALPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
-        self.model = MistralModel(config)
+        self.model = MISTRALModel(config)
         if getattr(config, "classifier_dropout", None) is not None:
             classifier_dropout = config.classifier_dropout
         elif getattr(config, "hidden_dropout", None) is not None:
@@ -1313,14 +1313,14 @@ SQuAD (a linear layer on top of the hidden-states output to compute `span start 
     """,
     MISTRAL_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForQuestionAnswering with Llama->Mistral,LLAMA->MISTRAL,transformer->model
-class MistralForQuestionAnswering(MistralPreTrainedModel):
+# Copied from transformers.models.mistral.modeling_mistral.MistralForQuestionAnswering with Mistral->Mistral,Mistral->MISTRAL,transformer->model
+class MISTRALForQuestionAnswering(MISTRALPreTrainedModel):
     base_model_prefix = "model"
 
-    # Copied from models.models.bloom.modeling_bloom.BloomForQuestionAnswering.__init__ with Bloom->Mistral
+    # Copied from models.models.bloom.modeling_bloom.BloomForQuestionAnswering.__init__ with Bloom->MISTRAL
     def __init__(self, config):
         super().__init__(config)
-        self.model = MistralModel(config)
+        self.model = MISTRALModel(config)
         self.qa_outputs = nn.Linear(config.hidden_size, 2)
 
         # Initialize weights and apply final processing

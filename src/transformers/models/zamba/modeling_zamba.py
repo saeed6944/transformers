@@ -76,7 +76,7 @@ logger = logging.get_logger(__name__)
 _CONFIG_FOR_DOC = "ZambaConfig"
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Zamba
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Zamba
 class ZambaRMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """
@@ -100,7 +100,7 @@ class ZambaRMSNorm(nn.Module):
 ALL_LAYERNORM_LAYERS.append(ZambaRMSNorm)
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -312,7 +312,7 @@ class ZambaFlashAttention2(ZambaAttention):
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
+    # Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

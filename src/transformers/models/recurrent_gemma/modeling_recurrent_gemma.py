@@ -95,7 +95,7 @@ class RecurrentGemmaRotaryEmbedding(nn.Module):
         return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -103,7 +103,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
+# Copied from transformers.models.mistral.modeling_mistral.apply_rotary_pos_emb
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
 
@@ -131,7 +131,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     return q_embed, k_embed
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -668,11 +668,11 @@ class RecurrentGemmaModel(RecurrentGemmaPreTrainedModel):
         # Initialize weights and apply final processing
         self.post_init()
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaModel.get_input_embeddings
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel.get_input_embeddings
     def get_input_embeddings(self):
         return self.embed_tokens
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaModel.set_input_embeddings
+    # Copied from transformers.models.mistral.modeling_mistral.MistralModel.set_input_embeddings
     def set_input_embeddings(self, value):
         self.embed_tokens = value
 
@@ -775,7 +775,7 @@ class RecurrentGemmaModel(RecurrentGemmaPreTrainedModel):
         return causal_mask
 
 
-# TODO: re-enable check: Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM with LLAMA->RECURRENTGEMMA,Llama->RecurrentGemma,llama->gemma
+# TODO: re-enable check: Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM with Mistral->RECURRENTGEMMA,Mistral->RecurrentGemma,Mistral->gemma
 class RecurrentGemmaForCausalLM(RecurrentGemmaPreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 

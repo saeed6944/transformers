@@ -57,7 +57,7 @@ class Olmo2RMSNorm(nn.Module):
         return f"{tuple(self.weight.shape)}, eps={self.variance_epsilon}"
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaRotaryEmbedding with Llama->Olmo2
+# copied from transformers.models.mistral.modeling_mistral.MistralRotaryEmbedding with Mistral->Olmo2
 # TODO(joao): add me back asap :)
 class Olmo2RotaryEmbedding(nn.Module):
     def __init__(self, dim, max_position_embeddings=2048, base=10000, device=None, scaling_factor=1.0):
@@ -88,7 +88,7 @@ class Olmo2RotaryEmbedding(nn.Module):
         return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaLinearScalingRotaryEmbedding with Llama->Olmo2
+# copied from transformers.models.mistral.modeling_mistral.MistralLinearScalingRotaryEmbedding with Mistral->Olmo2
 # TODO(joao): add me back asap :)
 class Olmo2LinearScalingRotaryEmbedding(Olmo2RotaryEmbedding):
     """Olmo2RotaryEmbedding extended with linear scaling. Credits to the Reddit user /u/kaiokendev"""
@@ -100,7 +100,7 @@ class Olmo2LinearScalingRotaryEmbedding(Olmo2RotaryEmbedding):
         return cos, sin
 
 
-# copied from transformers.models.llama.modeling_llama.LlamaDynamicNTKScalingRotaryEmbedding with Llama->Olmo2
+# copied from transformers.models.mistral.modeling_mistral.MistralDynamicNTKScalingRotaryEmbedding with Mistral->Olmo2
 # TODO(joao): add me back asap :)
 class Olmo2DynamicNTKScalingRotaryEmbedding(Olmo2RotaryEmbedding):
     """Olmo2RotaryEmbedding extended with Dynamic NTK scaling. Credits to the Reddit users /u/bloc97 and /u/emozilla"""
@@ -170,7 +170,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
 class Olmo2Attention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
-    # copied from transformers.models.llama.modeling_llama.LlamaAttention.__init__ with Llama->Olmo2
+    # copied from transformers.models.mistral.modeling_mistral.MistralAttention.__init__ with Mistral->Olmo2
     # TODO(joao): add me back asap :)
     def __init__(self, config: Olmo2Config, layer_idx: Optional[int] = None):
         super().__init__()
@@ -512,7 +512,7 @@ class Olmo2DecoderLayer(nn.Module):
         self.post_attention_layernorm = Olmo2RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.post_feedforward_layernorm = Olmo2RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
-    # copied from transformers.models.llama.modeling_llama.LlamaDecoderLayer.forward
+    # copied from transformers.models.mistral.modeling_mistral.MistralDecoderLayer.forward
     # TODO(joao): add me back asap :)
     def forward(
         self,
@@ -728,7 +728,7 @@ class Olmo2Model(Olmo2PreTrainedModel):
         self.embed_tokens = value
 
     @add_start_docstrings_to_model_forward(OLMO2_INPUTS_DOCSTRING)
-    # copied from transformers.models.llama.modeling_llama.LlamaModel.forward
+    # copied from transformers.models.mistral.modeling_mistral.MistralModel.forward
     # TODO(joao): add me back asap :)
     def forward(
         self,
@@ -971,7 +971,7 @@ class Olmo2Model(Olmo2PreTrainedModel):
         return causal_mask
 
 
-# TODO: re-enable check: Copied from transformers.models.llama.modeling_llama.LlamaForCausalLM with LLAMA->OLMO2,Llama->Olmo2
+# TODO: re-enable check: Copied from transformers.models.mistral.modeling_mistral.MistralForCausalLM with Mistral->OLMO2,Mistral->Olmo2
 class Olmo2ForCausalLM(Olmo2PreTrainedModel, GenerationMixin):
     _tied_weights_keys = ["lm_head.weight"]
 

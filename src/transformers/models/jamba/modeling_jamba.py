@@ -164,7 +164,7 @@ def load_balancing_loss_func(
     return overall_loss * num_experts
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Jamba
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Jamba
 class JambaRMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """
@@ -185,7 +185,7 @@ class JambaRMSNorm(nn.Module):
         return f"{tuple(self.weight.shape)}, eps={self.variance_epsilon}"
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -384,7 +384,7 @@ class JambaFlashAttention2(JambaAttention):
     flash attention and deal with padding tokens in case the input contains any of them.
     """
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
+    # Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -1616,7 +1616,7 @@ class JambaForCausalLM(JambaPreTrainedModel, GenerationMixin):
     """,
     JAMBA_START_DOCSTRING,
 )
-# Copied from transformers.models.mixtral.modeling_mixtral.MixtralForSequenceClassification with Mixtral->Jamba, MIXTRAL->JAMBA
+# Copied from transformers.models.mistral.modeling_mistral.MistralForSequenceClassification with Mistral->Jamba, MISTRAL->JAMBA
 class JambaForSequenceClassification(JambaPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)

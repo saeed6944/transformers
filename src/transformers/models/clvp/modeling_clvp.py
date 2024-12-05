@@ -67,7 +67,7 @@ def clvp_loss(similarity: torch.Tensor) -> torch.Tensor:
     return (caption_loss + speech_loss) / 2.0
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -222,7 +222,7 @@ class ClvpOutput(ModelOutput):
     speech_encoder_hidden_states: torch.FloatTensor = None
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Clvp
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Clvp
 class ClvpRMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """

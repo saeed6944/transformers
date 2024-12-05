@@ -438,7 +438,7 @@ class SiglipFlashAttention2(SiglipAttention):
 
     is_causal = False
 
-    # Copied from transformers.models.llama.modeling_llama.LlamaFlashAttention2.__init__
+    # Copied from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.__init__
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -447,7 +447,7 @@ class SiglipFlashAttention2(SiglipAttention):
         # Beware that with flash_attn<2.1, using q_seqlen != k_seqlen (except for the case q_seqlen == 1) produces a wrong mask (top-left).
         self._flash_attn_uses_top_left_mask = not is_flash_attn_greater_or_equal_2_10()
 
-    # Adapted from transformers.models.llama.modeling_llama.LlamaFlashAttention2.forward
+    # Adapted from transformers.models.mistral.modeling_mistral.MistralFlashAttention2.forward
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -532,7 +532,7 @@ class SiglipSdpaAttention(SiglipAttention):
 
     is_causal = False
 
-    # Adapted from SiglipAttention.forward and transformers.models.llama.modeling_llama.LlamaSdpaAttention.forward
+    # Adapted from SiglipAttention.forward and transformers.models.mistral.modeling_mistral.MistralSdpaAttention.forward
     def forward(
         self,
         hidden_states: torch.Tensor,

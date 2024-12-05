@@ -118,7 +118,7 @@ class PixtralRotaryEmbedding(nn.Module):
             self.max_seq_len_cached = self.original_max_seq_len
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -126,7 +126,7 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-# Copied from transformers.models.llama.modeling_llama.apply_rotary_pos_emb
+# Copied from transformers.models.mistral.modeling_mistral.apply_rotary_pos_emb
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     """Applies Rotary Position Embedding to the query and key tensors.
 
@@ -227,7 +227,7 @@ class PixtralMLP(nn.Module):
         return self.down_proj(self.act_fn(self.gate_proj(hidden_state)) * self.up_proj(hidden_state))
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Pixtral
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Pixtral
 class PixtralRMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """

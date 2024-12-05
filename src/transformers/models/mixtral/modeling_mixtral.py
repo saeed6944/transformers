@@ -152,7 +152,7 @@ def load_balancing_loss_func(
     return overall_loss * num_experts
 
 
-# Copied from transformers.models.llama.modeling_llama.LlamaRMSNorm with Llama->Mixtral
+# Copied from transformers.models.mistral.modeling_mistral.MistralRMSNorm with Mistral->Mixtral
 class MixtralRMSNorm(nn.Module):
     def __init__(self, hidden_size, eps=1e-6):
         """
@@ -211,7 +211,7 @@ class MixtralRotaryEmbedding(nn.Module):
         )
 
 
-# Copied from transformers.models.llama.modeling_llama.rotate_half
+# Copied from transformers.models.mistral.modeling_mistral.rotate_half
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
@@ -249,7 +249,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, unsqueeze_dim=1):
     return q_embed, k_embed
 
 
-# Copied from transformers.models.llama.modeling_llama.repeat_kv
+# Copied from transformers.models.mistral.modeling_mistral.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     """
     This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep). The hidden states go from (batch,
@@ -1344,7 +1344,7 @@ class MixtralForCausalLM(MixtralPreTrainedModel, GenerationMixin):
     """,
     MIXTRAL_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForSequenceClassification with Llama->Mixtral, LLAMA->MIXTRAL
+# Copied from transformers.models.mistral.modeling_mistral.MistralForSequenceClassification with Mistral->Mixtral, Mistral->MIXTRAL
 class MixtralForSequenceClassification(MixtralPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
@@ -1361,7 +1361,7 @@ class MixtralForSequenceClassification(MixtralPreTrainedModel):
     def set_input_embeddings(self, value):
         self.model.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MISTRAL_INPUTS_DOCSTRING)
     def forward(
         self,
         input_ids: Optional[torch.LongTensor] = None,
@@ -1441,7 +1441,7 @@ class MixtralForSequenceClassification(MixtralPreTrainedModel):
     """,
     MIXTRAL_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_llama.LlamaForTokenClassification with Llama->Mixtral, LLAMA->MIXTRAL
+# Copied from transformers.models.mistral.modeling_mistral.MistralForTokenClassification with Mistral->Mixtral, Mistral->MIXTRAL
 class MixtralForTokenClassification(MixtralPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
@@ -1465,7 +1465,7 @@ class MixtralForTokenClassification(MixtralPreTrainedModel):
     def set_input_embeddings(self, value):
         self.model.embed_tokens = value
 
-    @add_start_docstrings_to_model_forward(MIXTRAL_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(MISTRAL_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=TokenClassifierOutput,

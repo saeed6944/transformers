@@ -163,9 +163,9 @@ class FlaxGemmaRMSNorm(nn.Module):
         return (1 + self.weight) * jnp.asarray(hidden_states, dtype=self.dtype)
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaRotaryEmbedding with Llama->Gemma
-class FlaxGemmaRotaryEmbedding(nn.Module):
-    config: GemmaConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaRotaryEmbedding with Mistral->Gemma
+class FlaxLlamaRotaryEmbedding(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     # Ignore copy
@@ -374,16 +374,16 @@ class FlaxGemmaMLP(nn.Module):
         return hidden_states
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaDecoderLayer with Llama->Gemma
-class FlaxGemmaDecoderLayer(nn.Module):
-    config: GemmaConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaDecoderLayer with Mistral->Gemma
+class FlaxLlamaDecoderLayer(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
-        self.input_layernorm = FlaxGemmaRMSNorm(self.config, dtype=self.dtype)
-        self.self_attn = FlaxGemmaAttention(self.config, dtype=self.dtype)
-        self.post_attention_layernorm = FlaxGemmaRMSNorm(self.config, dtype=self.dtype)
-        self.mlp = FlaxGemmaMLP(self.config, dtype=self.dtype)
+        self.input_layernorm = FlaxLlamaRMSNorm(self.config, dtype=self.dtype)
+        self.self_attn = FlaxLlamaAttention(self.config, dtype=self.dtype)
+        self.post_attention_layernorm = FlaxLlamaRMSNorm(self.config, dtype=self.dtype)
+        self.mlp = FlaxLlamaMLP(self.config, dtype=self.dtype)
 
     def __call__(
         self,
@@ -550,14 +550,14 @@ class FlaxGemmaPreTrainedModel(FlaxPreTrainedModel):
         return outputs
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaLayerCollection with Llama->Gemma
-class FlaxGemmaLayerCollection(nn.Module):
-    config: GemmaConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaLayerCollection with Mistral->Gemma
+class FlaxLlamaLayerCollection(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
         self.blocks = [
-            FlaxGemmaDecoderLayer(self.config, dtype=self.dtype, name=str(i))
+            FlaxLlamaDecoderLayer(self.config, dtype=self.dtype, name=str(i))
             for i in range(self.config.num_hidden_layers)
         ]
 
@@ -591,15 +591,15 @@ class FlaxGemmaLayerCollection(nn.Module):
             if output_attentions:
                 all_attentions += (layer_outputs[1],)
 
-        # this contains possible `None` values - `FlaxGemmaModule` will filter them out
+        # this contains possible `None` values - `FlaxLlamaModule` will filter them out
         outputs = (hidden_states, all_hidden_states, all_attentions)
 
         return outputs
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaModule with Llama->Gemma
-class FlaxGemmaModule(nn.Module):
-    config: GemmaConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaModule with Mistral->Gemma
+class FlaxLlamaModule(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
@@ -611,8 +611,8 @@ class FlaxGemmaModule(nn.Module):
             embedding_init=embedding_init,
             dtype=self.dtype,
         )
-        self.layers = FlaxGemmaLayerCollection(self.config, dtype=self.dtype)
-        self.norm = FlaxGemmaRMSNorm(self.config, dtype=self.dtype)
+        self.layers = FlaxLlamaLayerCollection(self.config, dtype=self.dtype)
+        self.norm = FlaxLlamaRMSNorm(self.config, dtype=self.dtype)
 
     # Ignore copy
     def __call__(
@@ -664,9 +664,9 @@ class FlaxGemmaModule(nn.Module):
     "The bare Gemma Model transformer outputting raw hidden-states without any specific head on top.",
     GEMMA_START_DOCSTRING,
 )
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaModel with Llama->Gemma
-class FlaxGemmaModel(FlaxGemmaPreTrainedModel):
-    module_class = FlaxGemmaModule
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaModel with Mistral->Gemma
+class FlaxLlamaModel(FlaxLlamaPreTrainedModel):
+    module_class = FlaxLlamaModule
 
 
 append_call_sample_docstring(
@@ -678,13 +678,13 @@ append_call_sample_docstring(
 )
 
 
-# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaForCausalLMModule with Llama->Gemma
-class FlaxGemmaForCausalLMModule(nn.Module):
-    config: GemmaConfig
+# Copied from transformers.models.llama.modeling_flax_llama.FlaxLlamaForCausalLMModule with Mistral->Gemma
+class FlaxLlamaForCausalLMModule(nn.Module):
+    config: LlamaConfig
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
-        self.model = FlaxGemmaModule(self.config, dtype=self.dtype)
+        self.model = FlaxLlamaModule(self.config, dtype=self.dtype)
         self.lm_head = nn.Dense(
             self.config.vocab_size,
             use_bias=False,
