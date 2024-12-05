@@ -180,18 +180,18 @@ class DbrxModelTester:
         )
         return config
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Llama->Dbrx
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Mistral->Dbrx
     def create_and_check_model(
         self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
-        model = DbrxModel(config=config)
+        model = LlamaModel(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask)
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Llama->Dbrx
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Mistral->Dbrx
     def create_and_check_model_as_decoder(
         self,
         config,
@@ -205,7 +205,7 @@ class DbrxModelTester:
         encoder_attention_mask,
     ):
         config.add_cross_attention = True
-        model = DbrxModel(config)
+        model = LlamaModel(config)
         model.to(torch_device)
         model.eval()
         result = model(
@@ -222,7 +222,7 @@ class DbrxModelTester:
         result = model(input_ids, attention_mask=input_mask)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Llama->Dbrx
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Mistral->Dbrx
     def create_and_check_for_causal_lm(
         self,
         config,
@@ -235,7 +235,7 @@ class DbrxModelTester:
         encoder_hidden_states,
         encoder_attention_mask,
     ):
-        model = DbrxForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask, labels=token_labels)
@@ -303,7 +303,7 @@ class DbrxModelTester:
         # test that outputs are equal for slice
         self.parent.assertTrue(torch.allclose(output_from_past_slice, output_from_no_past_slice, atol=1e-3))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.prepare_config_and_inputs_for_common with Llama->Dbrx
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.prepare_config_and_inputs_for_common with Mistral->Dbrx
     def prepare_config_and_inputs_for_common(self):
         config_and_inputs = self.prepare_config_and_inputs()
         (

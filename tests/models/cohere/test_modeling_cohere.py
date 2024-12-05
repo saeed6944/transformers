@@ -38,7 +38,7 @@ if is_torch_available():
     from transformers import AutoTokenizer, CohereForCausalLM, CohereModel
 
 
-# Copied from transformers.tests.models.llama.LlamaModelTester with Llama->Cohere
+# Copied from transformers.tests.models.llama.LlamaModelTester with Mistral->Cohere
 class CohereModelTester:
     def __init__(
         self,

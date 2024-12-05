@@ -186,18 +186,18 @@ class Phi3ModelTester:
             pad_token_id=self.pad_token_id,
         )
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Llama->Phi3
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Mistral->Phi3
     def create_and_check_model(
         self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
-        model = Phi3Model(config=config)
+        model = LlamaModel(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask)
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Llama->Phi3
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Mistral->Phi3
     def create_and_check_model_as_decoder(
         self,
         config,
@@ -211,7 +211,7 @@ class Phi3ModelTester:
         encoder_attention_mask,
     ):
         config.add_cross_attention = True
-        model = Phi3Model(config)
+        model = LlamaModel(config)
         model.to(torch_device)
         model.eval()
         result = model(
@@ -228,7 +228,7 @@ class Phi3ModelTester:
         result = model(input_ids, attention_mask=input_mask)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Llama->Phi3
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Mistral->Phi3
     def create_and_check_for_causal_lm(
         self,
         config,
@@ -241,13 +241,13 @@ class Phi3ModelTester:
         encoder_hidden_states,
         encoder_attention_mask,
     ):
-        model = Phi3ForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask, labels=token_labels)
         self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Llama->Phi3
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Mistral->Phi3
     def create_and_check_decoder_model_past_large_inputs(
         self,
         config,
@@ -262,7 +262,7 @@ class Phi3ModelTester:
     ):
         config.is_decoder = True
         config.add_cross_attention = True
-        model = Phi3ForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
 
@@ -362,10 +362,10 @@ class Phi3ModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterMixin
     ):
         return True
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.setUp with Llama->Phi3
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.setUp with Mistral->Phi3
     def setUp(self):
-        self.model_tester = Phi3ModelTester(self)
-        self.config_tester = ConfigTester(self, config_class=Phi3Config, hidden_size=37)
+        self.model_tester = LlamaModelTester(self)
+        self.config_tester = ConfigTester(self, config_class=LlamaConfig, hidden_size=37)
 
     # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_config
     def test_config(self):
@@ -376,35 +376,35 @@ class Phi3ModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterMixin
         config_and_inputs = self.model_tester.prepare_config_and_inputs()
         self.model_tester.create_and_check_model(*config_and_inputs)
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model with Llama->Phi3,llama->phi3
-    def test_phi3_sequence_classification_model(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model with Mistral->Phi3,Mistral->phi3
+    def test_llama_sequence_classification_model(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         input_ids = input_dict["input_ids"]
         attention_mask = input_ids.ne(1).to(torch_device)
         sequence_labels = ids_tensor([self.model_tester.batch_size], self.model_tester.type_sequence_label_size)
-        model = Phi3ForSequenceClassification(config)
+        model = LlamaForSequenceClassification(config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_single_label with Llama->Phi3,llama->phi3
-    def test_phi3_sequence_classification_model_for_single_label(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_single_label with Mistral->Phi3,Mistral->phi3
+    def test_llama_sequence_classification_model_for_single_label(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         config.problem_type = "single_label_classification"
         input_ids = input_dict["input_ids"]
         attention_mask = input_ids.ne(1).to(torch_device)
         sequence_labels = ids_tensor([self.model_tester.batch_size], self.model_tester.type_sequence_label_size)
-        model = Phi3ForSequenceClassification(config)
+        model = LlamaForSequenceClassification(config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_multi_label with Llama->Phi3,llama->phi3
-    def test_phi3_sequence_classification_model_for_multi_label(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_multi_label with Mistral->Phi3,Mistral->phi3
+    def test_llama_sequence_classification_model_for_multi_label(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         config.problem_type = "multi_label_classification"
@@ -413,7 +413,7 @@ class Phi3ModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterMixin
         sequence_labels = ids_tensor(
             [self.model_tester.batch_size, config.num_labels], self.model_tester.type_sequence_label_size
         ).to(torch.float)
-        model = Phi3ForSequenceClassification(config)
+        model = LlamaForSequenceClassification(config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)

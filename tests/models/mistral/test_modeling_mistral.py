@@ -148,18 +148,18 @@ class MistralModelTester:
             pad_token_id=self.pad_token_id,
         )
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Llama->Mistral
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Mistral->Mistral
     def create_and_check_model(
         self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
-        model = MistralModel(config=config)
+        model = LlamaModel(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask)
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Llama->Mistral
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Mistral->Mistral
     def create_and_check_model_as_decoder(
         self,
         config,
@@ -173,7 +173,7 @@ class MistralModelTester:
         encoder_attention_mask,
     ):
         config.add_cross_attention = True
-        model = MistralModel(config)
+        model = LlamaModel(config)
         model.to(torch_device)
         model.eval()
         result = model(
@@ -190,7 +190,7 @@ class MistralModelTester:
         result = model(input_ids, attention_mask=input_mask)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Llama->Mistral
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Mistral->Mistral
     def create_and_check_for_causal_lm(
         self,
         config,
@@ -203,13 +203,13 @@ class MistralModelTester:
         encoder_hidden_states,
         encoder_attention_mask,
     ):
-        model = MistralForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask, labels=token_labels)
         self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Llama->Mistral
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Mistral->Mistral
     def create_and_check_decoder_model_past_large_inputs(
         self,
         config,
@@ -224,7 +224,7 @@ class MistralModelTester:
     ):
         config.is_decoder = True
         config.add_cross_attention = True
-        model = MistralForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
 
@@ -392,14 +392,14 @@ class MistralModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterMi
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_token_classification_model with Llama->Mistral,llama->Mistral
-    def test_Mistral_token_classification_model(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_token_classification_model with Mistral->Mistral,Mistral->Mistral
+    def test_llama_token_classification_model(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         input_ids = input_dict["input_ids"]
         attention_mask = input_ids.ne(1).to(torch_device)
         token_labels = ids_tensor([self.model_tester.batch_size, self.model_tester.seq_length], config.num_labels)
-        model = MistralForTokenClassification(config=config)
+        model = LlamaForTokenClassification(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=token_labels)

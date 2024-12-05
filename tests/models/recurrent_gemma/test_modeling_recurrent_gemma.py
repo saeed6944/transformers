@@ -140,18 +140,18 @@ class RecurrentGemmaModelTester:
             output_attentions=False,
         )
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Llama->RecurrentGemma
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Mistral->RecurrentGemma
     def create_and_check_model(
         self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
-        model = RecurrentGemmaModel(config=config)
+        model = LlamaModel(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask)
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Llama->RecurrentGemma
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Mistral->RecurrentGemma
     def create_and_check_model_as_decoder(
         self,
         config,
@@ -165,7 +165,7 @@ class RecurrentGemmaModelTester:
         encoder_attention_mask,
     ):
         config.add_cross_attention = True
-        model = RecurrentGemmaModel(config)
+        model = LlamaModel(config)
         model.to(torch_device)
         model.eval()
         result = model(
@@ -182,7 +182,7 @@ class RecurrentGemmaModelTester:
         result = model(input_ids, attention_mask=input_mask)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Llama->RecurrentGemma
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Mistral->RecurrentGemma
     def create_and_check_for_causal_lm(
         self,
         config,
@@ -195,13 +195,13 @@ class RecurrentGemmaModelTester:
         encoder_hidden_states,
         encoder_attention_mask,
     ):
-        model = RecurrentGemmaForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask, labels=token_labels)
         self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Llama->RecurrentGemma
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Mistral->RecurrentGemma
     def create_and_check_decoder_model_past_large_inputs(
         self,
         config,
@@ -216,7 +216,7 @@ class RecurrentGemmaModelTester:
     ):
         config.is_decoder = True
         config.add_cross_attention = True
-        model = RecurrentGemmaForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
 
@@ -264,7 +264,7 @@ class RecurrentGemmaModelTester:
         # test that outputs are equal for slice
         self.parent.assertTrue(torch.allclose(output_from_past_slice, output_from_no_past_slice, atol=1e-3))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.prepare_config_and_inputs_for_common with Llama->RecurrentGemma
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.prepare_config_and_inputs_for_common with Mistral->RecurrentGemma
     def prepare_config_and_inputs_for_common(self):
         config_and_inputs = self.prepare_config_and_inputs()
         (

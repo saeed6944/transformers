@@ -53,8 +53,8 @@ if is_torch_available():
     )
 
 
-# Copied from tests.models.llama.test_modeling_llama.LlamaModelTester with Llama->Persimmon
-class PersimmonModelTester:
+# Copied from tests.models.llama.test_modeling_llama.LlamaModelTester with Mistral->Persimmon
+class LlamaModelTester:
     def __init__(
         self,
         parent,
@@ -129,7 +129,7 @@ class PersimmonModelTester:
         return config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
 
     def get_config(self):
-        return PersimmonConfig(
+        return LlamaConfig(
             vocab_size=self.vocab_size,
             hidden_size=self.hidden_size,
             num_hidden_layers=self.num_hidden_layers,
@@ -148,7 +148,7 @@ class PersimmonModelTester:
     def create_and_check_model(
         self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
-        model = PersimmonModel(config=config)
+        model = LlamaModel(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask)
@@ -168,7 +168,7 @@ class PersimmonModelTester:
         encoder_attention_mask,
     ):
         config.add_cross_attention = True
-        model = PersimmonModel(config)
+        model = LlamaModel(config)
         model.to(torch_device)
         model.eval()
         result = model(
@@ -197,7 +197,7 @@ class PersimmonModelTester:
         encoder_hidden_states,
         encoder_attention_mask,
     ):
-        model = PersimmonForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask, labels=token_labels)
@@ -217,7 +217,7 @@ class PersimmonModelTester:
     ):
         config.is_decoder = True
         config.add_cross_attention = True
-        model = PersimmonForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
 
@@ -304,10 +304,10 @@ class PersimmonModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTester
     test_headmasking = False
     test_pruning = False
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.setUp with Llama->Persimmon
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.setUp with Mistral->Persimmon
     def setUp(self):
-        self.model_tester = PersimmonModelTester(self)
-        self.config_tester = ConfigTester(self, config_class=PersimmonConfig, hidden_size=37)
+        self.model_tester = LlamaModelTester(self)
+        self.config_tester = ConfigTester(self, config_class=LlamaConfig, hidden_size=37)
 
     # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_config
     def test_config(self):
@@ -325,35 +325,35 @@ class PersimmonModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTester
             config_and_inputs[0].position_embedding_type = type
             self.model_tester.create_and_check_model(*config_and_inputs)
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model with Llama->Persimmon,llama->persimmon
-    def test_persimmon_sequence_classification_model(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model with Mistral->Persimmon,Mistral->persimmon
+    def test_llama_sequence_classification_model(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         input_ids = input_dict["input_ids"]
         attention_mask = input_ids.ne(1).to(torch_device)
         sequence_labels = ids_tensor([self.model_tester.batch_size], self.model_tester.type_sequence_label_size)
-        model = PersimmonForSequenceClassification(config)
+        model = LlamaForSequenceClassification(config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_single_label with Llama->Persimmon,llama->persimmon
-    def test_persimmon_sequence_classification_model_for_single_label(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_single_label with Mistral->Persimmon,Mistral->persimmon
+    def test_llama_sequence_classification_model_for_single_label(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         config.problem_type = "single_label_classification"
         input_ids = input_dict["input_ids"]
         attention_mask = input_ids.ne(1).to(torch_device)
         sequence_labels = ids_tensor([self.model_tester.batch_size], self.model_tester.type_sequence_label_size)
-        model = PersimmonForSequenceClassification(config)
+        model = LlamaForSequenceClassification(config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_multi_label with Llama->Persimmon,llama->persimmon
-    def test_persimmon_sequence_classification_model_for_multi_label(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_sequence_classification_model_for_multi_label with Mistral->Persimmon,Mistral->persimmon
+    def test_llama_sequence_classification_model_for_multi_label(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         config.problem_type = "multi_label_classification"
@@ -362,20 +362,20 @@ class PersimmonModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTester
         sequence_labels = ids_tensor(
             [self.model_tester.batch_size, config.num_labels], self.model_tester.type_sequence_label_size
         ).to(torch.float)
-        model = PersimmonForSequenceClassification(config)
+        model = LlamaForSequenceClassification(config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_token_classification_model with Llama->Persimmon,llama->persimmon
-    def test_persimmon_token_classification_model(self):
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_token_classification_model with Mistral->Persimmon,Mistral->persimmon
+    def test_llama_token_classification_model(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
         input_ids = input_dict["input_ids"]
         attention_mask = input_ids.ne(1).to(torch_device)
         token_labels = ids_tensor([self.model_tester.batch_size, self.model_tester.seq_length], config.num_labels)
-        model = PersimmonForTokenClassification(config=config)
+        model = LlamaForTokenClassification(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=attention_mask, labels=token_labels)
@@ -390,14 +390,14 @@ class PersimmonModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTester
         pass
 
     @parameterized.expand([("linear",), ("dynamic",)])
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_model_rope_scaling_from_config with Llama->Persimmon
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_model_rope_scaling_from_config with Mistral->Persimmon
     def test_model_rope_scaling_from_config(self, scaling_type):
         config, _ = self.model_tester.prepare_config_and_inputs_for_common()
         short_input = ids_tensor([1, 10], config.vocab_size)
         long_input = ids_tensor([1, int(config.max_position_embeddings * 1.5)], config.vocab_size)
 
         set_seed(42)  # Fixed seed at init time so the two models get the same random weights
-        original_model = PersimmonModel(config)
+        original_model = LlamaModel(config)
         original_model.to(torch_device)
         original_model.eval()
         original_short_output = original_model(short_input).last_hidden_state
@@ -405,7 +405,7 @@ class PersimmonModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTester
 
         set_seed(42)  # Fixed seed at init time so the two models get the same random weights
         config.rope_scaling = {"type": scaling_type, "factor": 10.0}
-        scaled_model = PersimmonModel(config)
+        scaled_model = LlamaModel(config)
         scaled_model.to(torch_device)
         scaled_model.eval()
         scaled_short_output = scaled_model(short_input).last_hidden_state

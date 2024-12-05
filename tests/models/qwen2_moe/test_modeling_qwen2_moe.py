@@ -183,18 +183,18 @@ class Qwen2MoeModelTester:
             bos_token_id=self.bos_token_id,
         )
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Llama->Qwen2Moe
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model with Mistral->Qwen2Moe
     def create_and_check_model(
         self, config, input_ids, token_type_ids, input_mask, sequence_labels, token_labels, choice_labels
     ):
-        model = Qwen2MoeModel(config=config)
+        model = LlamaModel(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask)
         result = model(input_ids)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Llama->Qwen2Moe
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_model_as_decoder with Mistral->Qwen2Moe
     def create_and_check_model_as_decoder(
         self,
         config,
@@ -208,7 +208,7 @@ class Qwen2MoeModelTester:
         encoder_attention_mask,
     ):
         config.add_cross_attention = True
-        model = Qwen2MoeModel(config)
+        model = LlamaModel(config)
         model.to(torch_device)
         model.eval()
         result = model(
@@ -225,7 +225,7 @@ class Qwen2MoeModelTester:
         result = model(input_ids, attention_mask=input_mask)
         self.parent.assertEqual(result.last_hidden_state.shape, (self.batch_size, self.seq_length, self.hidden_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Llama->Qwen2Moe
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_for_causal_lm with Mistral->Qwen2Moe
     def create_and_check_for_causal_lm(
         self,
         config,
@@ -238,13 +238,13 @@ class Qwen2MoeModelTester:
         encoder_hidden_states,
         encoder_attention_mask,
     ):
-        model = Qwen2MoeForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
         result = model(input_ids, attention_mask=input_mask, labels=token_labels)
         self.parent.assertEqual(result.logits.shape, (self.batch_size, self.seq_length, self.vocab_size))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Llama->Qwen2Moe
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTester.create_and_check_decoder_model_past_large_inputs with Mistral->Qwen2Moe
     def create_and_check_decoder_model_past_large_inputs(
         self,
         config,
@@ -259,7 +259,7 @@ class Qwen2MoeModelTester:
     ):
         config.is_decoder = True
         config.add_cross_attention = True
-        model = Qwen2MoeForCausalLM(config=config)
+        model = LlamaForCausalLM(config=config)
         model.to(torch_device)
         model.eval()
 
@@ -428,7 +428,7 @@ class Qwen2MoeModelTest(ModelTesterMixin, GenerationTesterMixin, PipelineTesterM
         result = model(input_ids, attention_mask=attention_mask, labels=sequence_labels)
         self.assertEqual(result.logits.shape, (self.model_tester.batch_size, self.model_tester.num_labels))
 
-    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_token_classification_model with Llama->Qwen2Moe,llama->Qwen2Moe
+    # Copied from tests.models.llama.test_modeling_llama.LlamaModelTest.test_llama_token_classification_model with Qwen2Moe->Qwen2Moe,Qwen2Moe->Qwen2Moe
     def test_Qwen2Moe_token_classification_model(self):
         config, input_dict = self.model_tester.prepare_config_and_inputs_for_common()
         config.num_labels = 3
